@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ثبت نام در سامانه{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-user-plus me-2"></i>ثبت نام در سامانه
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Username Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text">@</span>
+                                {{ form.username }}
+                            </div>
+                            {% for error in form.username.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Email Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                            {{ form.email }}
+                            {% for error in form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Name Fields -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+                                {{ form.first_name }}
+                                {% for error in form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+                                {{ form.last_name }}
+                                {% for error in form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Password Fields -->
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">رمز عبور</label>
+                            {{ form.password1 }}
+                            <div class="form-text">{{ form.password1.help_text|safe }}</div>
+                            {% for error in form.password1.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">تکرار رمز عبور</label>
+                            {{ form.password2 }}
+                            {% for error in form.password2.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success py-2">
+                                <i class="fas fa-user-plus me-2"></i>ثبت نام
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <p class="mb-0">قبلاً حساب کاربری دارید؟ <a href="{% url 'accounts:login' %}" class="text-decoration-none">وارد شوید</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Enable Bootstrap validation
+    (function () {
+        'use strict'
+        
+        var forms = document.querySelectorAll('.needs-validation')
+        
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+<script>
+    (function () {
+        'use strict'
+        
+        var forms = document.querySelectorAll('.needs-validation')
+        
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    // Check password match
+                    const password1 = form.querySelector('#id_password1').value;
+                    const password2 = form.querySelector('#id_password2').value;
+                    const mismatchError = document.getElementById('password-mismatch-error');
+                    
+                    if (password1 !== password2) {
+                        if (!mismatchError) {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.id = 'password-mismatch-error';
+                            errorDiv.className = 'invalid-feedback d-block';
+                            errorDiv.textContent = 'رمزهای عبور وارد شده یکسان نیستند';
+                            form.querySelector('#id_password2').parentNode.appendChild(errorDiv);
+                        }
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    
+                    form.classList.add('was-validated');
+                }, false);
+                
+                // Real-time password matching check
+                const password1 = form.querySelector('#id_password1');
+                const password2 = form.querySelector('#id_password2');
+                
+                if (password1 && password2) {
+                    password2.addEventListener('input', function() {
+                        const mismatchError = document.getElementById('password-mismatch-error');
+                        if (password1.value !== password2.value) {
+                            if (!mismatchError) {
+                                const errorDiv = document.createElement('div');
+                                errorDiv.id = 'password-mismatch-error';
+                                errorDiv.className = 'invalid-feedback d-block';
+                                errorDiv.textContent = 'رمزهای عبور وارد شده یکسان نیستند';
+                                password2.parentNode.appendChild(errorDiv);
+                            }
+                            password2.classList.add('is-invalid');
+                        } else {
+                            if (mismatchError) {
+                                mismatchError.remove();
+                            }
+                            password2.classList.remove('is-invalid');
+                        }
+                    });
+                }
+            });
+    })();
+</script>
+{% endblock %}

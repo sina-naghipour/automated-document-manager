@@ -1,0 +1,451 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}داشبورد مدیریت فایل‌ها{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sidebar {
+        background-color: var(--sidebar-bg);
+        color: var(--sidebar-text);
+        height: 100vh;
+        position: fixed;
+        width: 280px;
+        transition: all 0.3s;
+    }
+
+    .sidebar .nav-link {
+        color: var(--sidebar-text);
+        padding: 12px 20px;
+        margin: 5px 10px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: rgba(214, 193, 182, 0.2);
+    }
+
+    .sidebar .nav-link.active {
+        background-color: var(--primary-medium);
+    }
+
+    .main-content {
+        margin-right: 280px;
+        padding: 25px;
+    }
+
+    .upload-container {
+        background-color: var(--card-bg);
+        border: 2px dashed var(--border-color);
+        border-radius: 10px;
+        padding: 30px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .upload-container:hover {
+        border-color: var(--primary-medium);
+        background-color: rgba(214, 193, 182, 0.1);
+    }
+
+    .file-type-card {
+        border-left: 4px solid var(--primary-medium);
+        transition: transform 0.2s;
+    }
+
+    .file-type-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .file-icon {
+        font-size: 2rem;
+        color: var(--primary-medium);
+    }
+
+    .main-content {
+        margin-right: 280px;
+        padding: 25px;
+        width: calc(100% - 280px);
+        max-width: 100%;
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 220px;
+        }
+
+        .main-content {
+            margin-right: 220px;
+            width: calc(100% - 220px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            position: relative;
+            height: auto;
+        }
+
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 60px;
+            overflow: hidden;
+        }
+
+        .sidebar .nav-text,
+        .sidebar .logo-text,
+        .sidebar h4 {
+            display: none;
+        }
+
+        .sidebar .nav-link {
+            text-align: center;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 0 !important;
+            font-size: 1.2rem;
+        }
+
+        .sidebar .dropdown-toggle::after {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex">
+
+    <!-- Sidebar -->
+    <div class="sidebar p-3">
+        <!-- Burger Button for Mobile -->
+        <div class="d-flex justify-content-end d-lg-none mb-3">
+            <button class="btn p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <i class="fas fa-bars fa-lg" style="color: var(--sidebar-text);"></i>
+            </button>
+        </div>
+
+        <!-- Logo -->
+        <div class="text-center mb-4">
+            <h4 class="mb-3">مدیریت هوشمند فایل‌ها</h4>
+        </div>
+
+        <!-- Main Menu -->
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">
+                    <i class="fas fa-tachometer-alt me-2"></i>داشبورد
+                </a>
+            </li>
+
+            <!-- File Management -->
+            <li class="nav-item mt-2">
+                <a class="nav-link" data-bs-toggle="collapse" href="#fileManagement">
+                    <i class="fas fa-folder-open me-2"></i>مدیریت فایل‌ها
+                    <i class="fas fa-angle-down float-start mt-1"></i>
+                </a>
+                <div class="collapse show" id="fileManagement">
+                    <ul class="nav flex-column ps-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'docs:upload' %}">
+                                <i class="fas fa-upload me-2"></i>آپلود سند
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-search me-2"></i>جستجوی سند
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="#">
+                                <i class="fas fa-trash-alt me-2"></i>سطل آشغال
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <!-- User Management Section -->
+            <li class="nav-item mt-2">
+                <a class="nav-link" data-bs-toggle="collapse" href="#userManagement">
+                    <i class="fas fa-users-cog me-2"></i>مدیریت کاربران
+                    <i class="fas fa-angle-down float-start mt-1"></i>
+                </a>
+                <div class="collapse show" id="userManagement">
+                    <ul class="nav flex-column ps-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-user-plus me-2"></i>ایجاد کاربر جدید
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-user-edit me-2"></i>ویرایش کاربران
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-user-lock me-2"></i>مدیریت دسترسی‌ها
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-user-tag me-2"></i>نقش‌های کاربری
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+
+        <!-- User Info -->
+        <div class="position-absolute bottom-0 start-0 end-0 p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="d-block">{{ request.user.get_full_name }}</span>
+                    <small class="text">مدیر سیستم</small>
+                </div>
+                <div class="dropdown">
+                    <img src="{% static 'images/avatar.svg' %}" alt="User" width="45"
+                        class="rounded-circle dropdown-toggle" style="filter: brightness(0) invert(1); cursor: pointer;"
+                        id="userDropdown" data-bs-toggle="dropdown">
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        {% if request.user.is_authenticated %}
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog me-2"></i>پروفایل</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>خروج
+                            </a></li>
+                        {% else %}
+                        <li><a class="dropdown-item text-success" href="{% url 'accounts:login' %}">
+                                <i class="fas fa-sign-in-alt me-2"></i>ورود
+                            </a></li>
+                        <li><a class="dropdown-item text-primary" href="{% url 'accounts:register' %}">
+                                <i class="fas fa-user-plus me-2"></i>ثبت‌نام
+                            </a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu (Offcanvas) -->
+    <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="mobileMenuLabel">منو</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        <i class="fas fa-tachometer-alt me-2"></i>داشبورد
+                    </a>
+                </li>
+
+                <!-- File Management Mobile -->
+                <li class="nav-item mt-2">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#mobileFileManagement">
+                        <i class="fas fa-folder-open me-2"></i>مدیریت فایل‌ها
+                        <i class="fas fa-angle-down float-start mt-1"></i>
+                    </a>
+                    <div class="collapse show" id="mobileFileManagement">
+                        <ul class="nav flex-column ps-4">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-images me-2"></i>عکس‌ها
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-file-alt me-2"></i>اسناد
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-video me-2"></i>ویدئوها
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-archive me-2"></i>متفرقه
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Auth Links -->
+                {% if request.user.is_authenticated %}
+                <li class="nav-item mt-3">
+                    <a class="nav-link text-danger" href="{% url 'accounts:logout' %}">
+                        <i class="fas fa-sign-out-alt me-2"></i>خروج از سیستم
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-item mt-3">
+                    <a class="nav-link text-success" href="{% url 'accounts:login' %}">
+                        <i class="fas fa-sign-in-alt me-2"></i>ورود به سیستم
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-primary" href="{% url 'accounts:register' %}">
+                        <i class="fas fa-user-plus me-2"></i>ثبت‌نام کاربر جدید
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">داشبورد مدیریت فایل‌ها</h2>
+            <div class="d-flex align-items-center">
+                <span class="me-3"><i class="fas fa-calendar-alt me-2"></i>امروز: {% now "SHORT_DATE_FORMAT" %}</span>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-4"><i class="fas fa-cloud-upload-alt me-2"></i>آپلود فایل جدید</h5>
+                <div class="upload-container" id="uploadTrigger">
+                    <i class="fas fa-file-upload mb-3" style="font-size: 3rem; color: var(--primary-medium);"></i>
+                    <h5>فایل‌ها را اینجا رها کنید یا کلیک کنید</h5>
+                    <p class="text-muted">فایل‌های شما به صورت خودکار در مخزن مناسب ذخیره می‌شوند</p>
+                    <input type="file" id="fileInput" style="display: none;" multiple>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Type Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card file-type-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted">عکس‌ها</h6>
+                                <h3>۱,۲۴۵</h3>
+                            </div>
+                            <span class="file-icon"><i class="fas fa-images"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card file-type-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted">اسناد</h6>
+                                <h3>۸۷۶</h3>
+                            </div>
+                            <span class="file-icon"><i class="fas fa-file-alt"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card file-type-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted">ویدئوها</h6>
+                                <h3>۳۲۱</h3>
+                            </div>
+                            <span class="file-icon"><i class="fas fa-video"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card file-type-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted">متفرقه</h6>
+                                <h3>۱۵۶</h3>
+                            </div>
+                            <span class="file-icon"><i class="fas fa-archive"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Uploads -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-4"><i class="fas fa-history me-2"></i>آخرین فایل‌های آپلود شده</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>نام فایل</th>
+                                <th>نوع</th>
+                                <th>مخزن</th>
+                                <th>تاریخ آپلود</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <i class="fas fa-image me-2 text-primary"></i>
+                                    تصویر-پروفایل.jpg
+                                </td>
+                                <td>عکس</td>
+                                <td>مخزن کاربران</td>
+                                <td>امروز، ۱۴:۳۰</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">مدیریت</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="fas fa-file-pdf me-2 text-danger"></i>
+                                    قرارداد-فروش.pdf
+                                </td>
+                                <td>سند</td>
+                                <td>مخزن اسناد</td>
+                                <td>دیروز، ۱۱:۱۵</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">مدیریت</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Upload functionality
+    document.getElementById('uploadTrigger').addEventListener('click', function () {
+        document.getElementById('fileInput').click();
+    });
+
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+        if (this.files.length > 0) {
+            alert('فایل‌ها برای پردازش و ذخیره در مخزن مناسب ارسال شدند');
+            // Here you would normally send files to server
+        }
+    });
+</script>
+{% endblock %}

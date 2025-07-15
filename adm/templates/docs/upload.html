@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}آپلود اسناد جدید{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-dark: #1B3C53;
+        --primary-medium: #456882;
+        --secondary-light: #D2C1B6;
+        --background-light: #F9F3EF;
+    }
+    
+    .upload-container {
+        border: 2px dashed var(--primary-medium);
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background-color: rgba(210, 193, 182, 0.05);
+    }
+    
+    .upload-container:hover {
+        border-color: var(--primary-dark);
+        background-color: rgba(210, 193, 182, 0.1);
+    }
+    
+    .file-info {
+        background-color: var(--background-light);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        border: 1px solid var(--secondary-light);
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+        color: var(--primary-medium);
+        margin-bottom: 1rem;
+    }
+    
+    .file-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .file-item:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header text-white" style="background-color: var(--primary-dark);">
+                    <h4 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>آپلود اسناد جدید
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        {% if messages %}
+                        <div class="container mt-3">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <!-- Drag & Drop Area -->
+                        <div class="upload-container mb-4" id="dropArea">
+                            <div id="uploadIcon" class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h5 id="uploadText">فایل‌های سند را اینجا رها کنید یا کلیک کنید</h5>
+                            <input type="file" id="fileInput" name="documents" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" style="display: none;" multiple required>
+                            <div id="filePreview" class="file-info d-none">
+                                <div id="fileList" class="text-start">
+                                    <!-- فایل‌ها اینجا نمایش داده می‌شوند -->
+                                </div>
+                                <button type="button" id="clearFiles" class="btn btn-sm btn-outline-danger mt-2">
+                                    <i class="fas fa-times me-1"></i>حذف همه
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Document Details -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label for="docTitle" class="form-label">عنوان مجموعه اسناد</label>
+                                <input type="text" class="form-control" id="docTitle" name="title" required>
+                                <div class="invalid-feedback">
+                                    لطفاً عنوان را وارد کنید.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="docCategory" class="form-label">دسته‌بندی</label>
+                                <select class="form-select" id="docCategory" name="category" required>
+                                    <option value="" selected disabled>انتخاب کنید</option>
+                                    <option value="s">سکه</option>
+                                    <option value="m">مطبوعات</option>
+                                    <option value="st">دانشجویی</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    لطفاً دسته‌بندی را انتخاب کنید.
+                                </div>
+                            </div>
+                        </div>                        
+                        <div class="mb-3">
+                            <label class="form-label">‌پسوند</label>
+                            <input type="text" class="form-control" id="docTags" name="tags" placeholder="پسوند برای فولدر هایی که قرار هست درست شود.">
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn py-2" style="background-color: var(--primary-dark); color: white;" id="submitBtn" disabled>
+                                <i class="fas fa-save me-2"></i>ذخیره اسناد
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // File Upload Handling
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fileInput');
+    const uploadText = document.getElementById('uploadText');
+    const uploadIcon = document.getElementById('uploadIcon');
+    const filePreview = document.getElementById('filePreview');
+    const fileList = document.getElementById('fileList');
+    const clearFiles = document.getElementById('clearFiles');
+    const submitBtn = document.getElementById('submitBtn');
+    const maxFiles = 20;
+
+    // حل مشکل باز نشدن پنجره انتخاب فایل
+    dropArea.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // حل مشکل حذف همه فایل‌ها به جای یک فایل
+    function createNewFileList(filesArray) {
+        const dataTransfer = new DataTransfer();
+        filesArray.forEach(file => dataTransfer.items.add(file));
+        return dataTransfer.files;
+    }
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        dropArea.style.backgroundColor = 'rgba(210, 193, 182, 0.2)';
+    }
+    
+    function unhighlight() {
+        dropArea.style.backgroundColor = 'rgba(210, 193, 182, 0.05)';
+    }
+    
+    // Handle dropped files
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+    
+    // Handle selected files
+    fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+    
+    function handleFiles(files) {
+        if (files.length > 0) {
+            if (files.length > maxFiles) {
+                alert(`حداکثر ${maxFiles} فایل می‌توانید آپلود کنید`);
+                return;
+            }
+            
+            displayFilesInfo(files);
+            submitBtn.disabled = false;
+        }
+    }
+    
+    function displayFilesInfo(files) {
+        fileList.innerHTML = '';
+        
+        Array.from(files).forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold">${file.name}</span>
+                        <span class="text-muted small d-block">${formatFileSize(file.size)}</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-file" data-index="${index}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            fileList.appendChild(fileItem);
+        });
+        
+        // اضافه کردن رویداد برای دکمه‌های حذف تکی
+        document.querySelectorAll('.remove-file').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const index = parseInt(this.getAttribute('data-index'));
+                const filesArray = Array.from(fileInput.files);
+                
+                if (index >= 0 && index < filesArray.length) {
+                    filesArray.splice(index, 1);
+                    const newFiles = createNewFileList(filesArray);
+                    fileInput.files = newFiles;
+                    
+                    if (newFiles.length > 0) {
+                        displayFilesInfo(newFiles);
+                    } else {
+                        clearAllFiles();
+                    }
+                }
+            });
+        });
+        
+        filePreview.classList.remove('d-none');
+        uploadText.textContent = `${files.length} فایل انتخاب شده:`;
+        uploadIcon.innerHTML = '<i class="fas fa-file-alt"></i>';
+    }
+    
+    function clearAllFiles() {
+        fileInput.value = '';
+        filePreview.classList.add('d-none');
+        uploadText.textContent = 'فایل‌های سند را اینجا رها کنید یا کلیک کنید';
+        uploadIcon.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
+        submitBtn.disabled = true;
+    }
+    
+    clearFiles.addEventListener('click', function(e) {
+        e.stopPropagation();
+        clearAllFiles();
+    });
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Form validation
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('لطفاً حداقل یک فایل انتخاب کنید');
+            return false;
+        }
+        
+        // Validate file sizes (example: 10MB limit)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const invalidFiles = Array.from(fileInput.files).filter(file => file.size > maxSize);
+        
+        if (invalidFiles.length > 0) {
+            e.preventDefault();
+            alert(`بعضی فایل‌ها بیش از حد مجاز (10MB) هستند:\n${invalidFiles.map(f => f.name).join('\n')}`);
+            return false;
+        }
+    });
+</script>
+{% endblock %}
