@@ -162,7 +162,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="{% url 'docs:list' %}">
                                 <i class="fas fa-search me-2"></i>جستجوی سند
                             </a>
                         </li>
@@ -322,15 +322,70 @@
         <div class="card mb-4 border-0 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title mb-4"><i class="fas fa-cloud-upload-alt me-2"></i>آپلود فایل جدید</h5>
-                <div class="upload-container" id="uploadTrigger">
-                    <i class="fas fa-file-upload mb-3" style="font-size: 3rem; color: var(--primary-medium);"></i>
-                    <h5>فایل‌ها را اینجا رها کنید یا کلیک کنید</h5>
-                    <p class="text-muted">فایل‌های شما به صورت خودکار در مخزن مناسب ذخیره می‌شوند</p>
-                    <input type="file" id="fileInput" style="display: none;" multiple>
-                </div>
+
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Drag & Drop Area -->
+                    <div class="upload-container mb-4" id="dropArea">
+                        <div id="uploadIcon" class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h5 id="uploadText">فایل‌های سند را اینجا رها کنید یا کلیک کنید</h5>
+                        <p class="text-muted">فایل‌های شما به صورت خودکار در مخزن مناسب ذخیره می‌شوند</p>
+                        <input type="file" id="fileInput" name="documents"
+                            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" style="display: none;" multiple
+                            required>
+
+                        <div id="filePreview" class="file-info d-none">
+                            <div id="fileList" class="text-start">
+                                <!-- فایل‌ها اینجا نمایش داده می‌شوند -->
+                            </div>
+                            <button type="button" id="clearFiles" class="btn btn-sm btn-outline-danger mt-2">
+                                <i class="fas fa-times me-1"></i>حذف همه
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Details -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="docTitle" class="form-label">عنوان مجموعه اسناد</label>
+                            <input type="text" class="form-control" id="docTitle" name="title" required>
+                            <div class="invalid-feedback">
+                                لطفاً عنوان را وارد کنید.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="docCategory" class="form-label">دسته‌بندی</label>
+                            <select class="form-select" id="docCategory" name="category" required>
+                                <option value="" selected disabled>انتخاب کنید</option>
+                                <option value="s">سکه</option>
+                                <option value="m">مطبوعات</option>
+                                <option value="st">دانشجویی</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                لطفاً دسته‌بندی را انتخاب کنید.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">پسوند</label>
+                        <input type="text" class="form-control" id="docTags" name="tags"
+                            placeholder="پسوند برای فولدرهایی که قرار است ایجاد شوند">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn py-2" style="background-color: #1B3C53; color: white;"
+                            id="submitBtn">
+                            <i class="fas fa-save me-2"></i>ذخیره اسناد
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-
         <!-- File Type Summary -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -436,16 +491,143 @@
 </div>
 
 <script>
-    // Upload functionality
-    document.getElementById('uploadTrigger').addEventListener('click', function () {
-        document.getElementById('fileInput').click();
+    // File Upload Handling - مشابه صفحه آپلود اسناد
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fileInput');
+    const uploadText = document.getElementById('uploadText');
+    const uploadIcon = document.getElementById('uploadIcon');
+    const filePreview = document.getElementById('filePreview');
+    const fileList = document.getElementById('fileList');
+    const clearFiles = document.getElementById('clearFiles');
+    const maxFiles = 20;
+
+    // حل مشکل باز نشدن پنجره انتخاب فایل
+    dropArea.addEventListener('click', function () {
+        fileInput.click();
     });
 
-    document.getElementById('fileInput').addEventListener('change', function (e) {
-        if (this.files.length > 0) {
-            alert('فایل‌ها برای پردازش و ذخیره در مخزن مناسب ارسال شدند');
-            // Here you would normally send files to server
-        }
+    function createNewFileList(filesArray) {
+        const dataTransfer = new DataTransfer();
+        filesArray.forEach(file => dataTransfer.items.add(file));
+        return dataTransfer.files;
+    }
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
     });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dropArea.style.backgroundColor = 'rgba(210, 193, 182, 0.2)';
+    }
+
+    function unhighlight() {
+        dropArea.style.backgroundColor = 'rgba(210, 193, 182, 0.05)';
+    }
+
+    // Handle dropped files
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    // Handle selected files
+    fileInput.addEventListener('change', function () {
+        handleFiles(this.files);
+    });
+
+    function handleFiles(files) {
+        if (files.length > 0) {
+            if (files.length > maxFiles) {
+                alert(`حداکثر ${maxFiles} فایل می‌توانید آپلود کنید`);
+                return;
+            }
+
+            displayFilesInfo(files);
+        }
+    }
+
+    function displayFilesInfo(files) {
+        fileList.innerHTML = '';
+
+        Array.from(files).forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold">${file.name}</span>
+                        <span class="text-muted small d-block">${formatFileSize(file.size)}</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-file" data-index="${index}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            fileList.appendChild(fileItem);
+        });
+
+        // اضافه کردن رویداد برای دکمه‌های حذف تکی
+        document.querySelectorAll('.remove-file').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const index = parseInt(this.getAttribute('data-index'));
+                const filesArray = Array.from(fileInput.files);
+
+                if (index >= 0 && index < filesArray.length) {
+                    filesArray.splice(index, 1);
+                    const newFiles = createNewFileList(filesArray);
+                    fileInput.files = newFiles;
+
+                    if (newFiles.length > 0) {
+                        displayFilesInfo(newFiles);
+                    } else {
+                        clearAllFiles();
+                    }
+                }
+            });
+        });
+
+        filePreview.classList.remove('d-none');
+        uploadText.textContent = `${files.length} فایل انتخاب شده:`;
+        uploadIcon.innerHTML = '<i class="fas fa-file-alt"></i>';
+    }
+
+    function clearAllFiles() {
+        fileInput.value = '';
+        filePreview.classList.add('d-none');
+        uploadText.textContent = 'فایل‌ها را اینجا رها کنید یا کلیک کنید';
+        uploadIcon.innerHTML = '<i class="fas fa-cloud-upload-alt"></i>';
+    }
+
+    clearFiles.addEventListener('click', function (e) {
+        e.stopPropagation();
+        clearAllFiles();
+    });
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
 </script>
 {% endblock %}

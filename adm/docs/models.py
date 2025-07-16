@@ -6,7 +6,7 @@ import re
 from django.core.files.storage import default_storage
 
 def upload_to(instance, filename):
-    """Dynamically organizes files into folders with sequential numbering continuing from existing files."""
+    """Organizes files into categorized folders with sequential numbering."""
     base, extension = os.path.splitext(filename)
     extension = extension.lower()[1:]  # Remove the dot and make lowercase
 
@@ -28,35 +28,39 @@ def upload_to(instance, filename):
             folder = category
             break
 
-    # Get the target directory path
-    target_dir = f'{instance.title}-{instance.suffix}/{folder}/'
+    target_dir = os.path.join('files', f'{instance.title}-{instance.suffix}', folder)
     
-    # Find all existing files in the directory and extract their numbers
-    existing_numbers = []
+    # Create directory if it doesn't exist
+    if not default_storage.exists(target_dir):
+        try:
+            # Use os.makedirs for the actual filesystem path
+            full_path = os.path.join(default_storage.location, target_dir)
+            os.makedirs(full_path, exist_ok=True)
+        except Exception as e:
+            # Fallback to default behavior if directory creation fails
+            pass
+    
+    existing_numbers = [0] 
+    
     try:
         dir_contents = default_storage.listdir(target_dir)[1]  # Get files only
-        pattern = re.compile(rf'^{base}(_(\d+))?\.{extension}$')
+        pattern = re.compile(rf'^{folder}_?(\d*)\.{extension}$')
         
         for existing_file in dir_contents:
             match = pattern.match(existing_file)
             if match:
-                number = match.group(2)
-                existing_numbers.append(int(number) if number else 0)
+                number_str = match.group(1)
+                number = int(number_str) if number_str else 1
+                existing_numbers.append(number)
     except FileNotFoundError:
-        pass  # Directory doesn't exist yet
+        pass 
     
     # Determine the next available number
-    next_number = max(existing_numbers) + 1 if existing_numbers else 1
+    next_number = max(existing_numbers) + 1
     
-    # Generate the new filename
-    print(next_number)
-    if next_number == 1:
-        new_filename = f'{folder}.{extension}'
-    else:
-        new_filename = f'{folder}_{next_number}.{extension}'
+    new_filename = f'{folder}_{next_number}.{extension}'
     
-    return f'files/{target_dir}{new_filename}'
-
+    return os.path.join(target_dir, new_filename)
 
 
 class Document(models.Model):
@@ -64,7 +68,7 @@ class Document(models.Model):
         COIN = 's', 'Coin'
         MAGAZINE = 'm', 'Magazine'
         STUDENT = 'st', 'Student'
-
+    is_trash = models.BooleanField(default=False)
     file = models.FileField(upload_to=upload_to)
     title = models.CharField(max_length=120)
     category = models.CharField(

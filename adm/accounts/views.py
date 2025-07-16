@@ -3,7 +3,8 @@ from django.views import View
 from accounts.forms import RegisterForm, LoginForm
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth import get_user_model, login, logout, authenticate
-
+from docs.models import Document
+from django.utils import timezone 
 User = get_user_model()
 
 
@@ -48,6 +49,8 @@ class Register(View):
                 return render(request, self.template_name, {'form' : form})
 
         return render(request, self.template_name, {'form' : form})
+
+
 class Login(View):
     
     template_name = 'index.html'
@@ -80,11 +83,46 @@ class Login(View):
             return redirect('accounts:dashboard')
                 
 
+
 class Dashboard(View):
     template_name = 'dashboard.html'
-    def get(self, request):
-        return render(request, self.template_name)
     
+    def get(self, request):
+        # Get recent documents for display
+        recent_documents = Document.objects.all().order_by('-date_created')[:10]
+        
+        context = {
+            'documents': recent_documents,
+            'now': timezone.now(),
+        }
+        return render(request, self.template_name, context)
+    
+    def post(self, request):
+        files = request.FILES.getlist('documents')  # Gets all files
+        title = request.POST.get('title')
+        category = request.POST.get('category')
+        suffix = request.POST.get('tags', '')
+
+        if not files:
+            return redirect('accounts:dashboard')
+
+        if not title or not category:
+            return redirect('accounts:dashboard')
+
+        try:
+            for file in files:
+                print(file)
+                Document.objects.create(
+                    file=file,
+                    title=title,
+                    category=category,
+                    suffix=suffix
+                )
+            return redirect('accounts:dashboard')
+
+        except Exception as e:
+            return redirect('accounts:dashboard')
+
 
 class Logout(View):
     def get(self, request):

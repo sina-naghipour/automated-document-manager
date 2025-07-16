@@ -1,0 +1,811 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}جستجوی اسناد{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Main Layout */
+    .main-content {
+        margin-right: 280px;
+        padding: 25px;
+        width: calc(100% - 280px);
+        min-height: 100vh;
+        background-color: var(--bg-color);
+    }
+
+    /* Search Components */
+    .search-card {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+    }
+
+    .search-header {
+        background-color: var(--primary-dark);
+        color: white;
+        border-radius: 10px 10px 0 0;
+        padding: 15px 20px;
+    }
+
+    /* Results Table */
+    .results-table {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .results-table th {
+        background-color: var(--primary-dark);
+        color: white;
+        padding: 12px 15px;
+    }
+
+    .results-table td {
+        vertical-align: middle;
+        padding: 12px 15px;
+    }
+
+    /* Document Type Badges */
+    .badge-category {
+        background-color: var(--primary-medium);
+        color: white;
+        font-weight: normal;
+    }
+
+    .badge-pdf {
+        background-color: #e74c3c;
+    }
+
+    .badge-word {
+        background-color: #2c81ba;
+    }
+
+    .badge-excel {
+        background-color: #1d6f42;
+    }
+
+    .badge-powerpoint {
+        background-color: #d35400;
+    }
+
+    .badge-other {
+        background-color: #7f8c8d;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+    }
+
+    .empty-state-icon {
+        font-size: 5rem;
+        color: var(--border-color);
+        margin-bottom: 20px;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 60px;
+        }
+
+        .sidebar .nav-text,
+        .sidebar .logo-text,
+        .sidebar h4 {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .search-card .row>div {
+            margin-bottom: 15px;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 8px 10px;
+            font-size: 0.9rem;
+        }
+    }
+
+    .sidebar {
+        background-color: var(--sidebar-bg);
+        color: var(--sidebar-text);
+        height: 100vh;
+        position: fixed;
+        width: 280px;
+        transition: all 0.3s;
+    }
+
+    .sidebar .nav-link {
+        color: var(--sidebar-text);
+        padding: 12px 20px;
+        margin: 5px 10px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: rgba(214, 193, 182, 0.2);
+    }
+
+    .sidebar .nav-link.active {
+        background-color: var(--primary-medium);
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 220px;
+        }
+
+        .main-content {
+            margin-right: 220px;
+            width: calc(100% - 220px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            position: relative;
+            height: auto;
+        }
+
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 60px;
+            overflow: hidden;
+        }
+
+        .sidebar .nav-text,
+        .sidebar .logo-text,
+        .sidebar h4 {
+            display: none;
+        }
+
+        .sidebar .nav-link {
+            text-align: center;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 0 !important;
+            font-size: 1.2rem;
+        }
+
+        .sidebar .dropdown-toggle::after {
+            display: none;
+        }
+    }
+    .img-thumbnail {
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    padding: 2px;
+    background-color: #fff;
+    transition: all 0.2s ease;
+}
+.img-thumbnail:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar p-3">
+        <!-- Burger Button for Mobile -->
+        <div class="d-flex justify-content-end d-lg-none mb-3">
+            <button class="btn p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <i class="fas fa-bars fa-lg" style="color: var(--sidebar-text);"></i>
+            </button>
+        </div>
+
+        <!-- Logo -->
+        <div class="text-center mb-4">
+            <h4 class="mb-3">مدیریت هوشمند فایل‌ها</h4>
+        </div>
+
+        <!-- Main Menu -->
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">
+                    <i class="fas fa-tachometer-alt me-2"></i>داشبورد
+                </a>
+            </li>
+
+            <!-- File Management -->
+            <li class="nav-item mt-2">
+                <a class="nav-link" data-bs-toggle="collapse" href="#fileManagement">
+                    <i class="fas fa-folder-open me-2"></i>مدیریت فایل‌ها
+                    <i class="fas fa-angle-down float-start mt-1"></i>
+                </a>
+                <div class="collapse show" id="fileManagement">
+                    <ul class="nav flex-column ps-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'docs:upload' %}">
+                                <i class="fas fa-upload me-2"></i>آپلود سند
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'docs:list' %}">
+                                <i class="fas fa-search me-2"></i>جستجوی سند
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="{% url 'docs:trash' %}">
+                                <i class="fas fa-trash-alt me-2"></i>سطل آشغال
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <!-- User Management Section -->
+            <li class="nav-item mt-2">
+                <a class="nav-link" data-bs-toggle="collapse" href="#userManagement">
+                    <i class="fas fa-users-cog me-2"></i>مدیریت کاربران
+                    <i class="fas fa-angle-down float-start mt-1"></i>
+                </a>
+                <div class="collapse show" id="userManagement">
+                    <ul class="nav flex-column ps-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-user-plus me-2"></i>ایجاد کاربر جدید
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-user-edit me-2"></i>ویرایش کاربران
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-user-lock me-2"></i>مدیریت دسترسی‌ها
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-user-tag me-2"></i>نقش‌های کاربری
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+
+        <!-- User Info -->
+        <div class="position-absolute bottom-0 start-0 end-0 p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="d-block">{{ request.user.get_full_name }}</span>
+                    <small class="text">مدیر سیستم</small>
+                </div>
+                <div class="dropdown">
+                    <img src="{% static 'images/avatar.svg' %}" alt="User" width="45"
+                        class="rounded-circle dropdown-toggle" style="filter: brightness(0) invert(1); cursor: pointer;"
+                        id="userDropdown" data-bs-toggle="dropdown">
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        {% if request.user.is_authenticated %}
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog me-2"></i>پروفایل</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>خروج
+                            </a></li>
+                        {% else %}
+                        <li><a class="dropdown-item text-success" href="{% url 'accounts:login' %}">
+                                <i class="fas fa-sign-in-alt me-2"></i>ورود
+                            </a></li>
+                        <li><a class="dropdown-item text-primary" href="{% url 'accounts:register' %}">
+                                <i class="fas fa-user-plus me-2"></i>ثبت‌نام
+                            </a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu (Offcanvas) -->
+    <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="mobileMenuLabel">منو</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        <i class="fas fa-tachometer-alt me-2"></i>داشبورد
+                    </a>
+                </li>
+
+                <!-- File Management Mobile -->
+                <li class="nav-item mt-2">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#mobileFileManagement">
+                        <i class="fas fa-folder-open me-2"></i>مدیریت فایل‌ها
+                        <i class="fas fa-angle-down float-start mt-1"></i>
+                    </a>
+                    <div class="collapse show" id="mobileFileManagement">
+                        <ul class="nav flex-column ps-4">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-images me-2"></i>عکس‌ها
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-file-alt me-2"></i>اسناد
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-video me-2"></i>ویدئوها
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-archive me-2"></i>متفرقه
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Auth Links -->
+                {% if request.user.is_authenticated %}
+                <li class="nav-item mt-3">
+                    <a class="nav-link text-danger" href="{% url 'accounts:logout' %}">
+                        <i class="fas fa-sign-out-alt me-2"></i>خروج از سیستم
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-item mt-3">
+                    <a class="nav-link text-success" href="{% url 'accounts:login' %}">
+                        <i class="fas fa-sign-in-alt me-2"></i>ورود به سیستم
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-primary" href="{% url 'accounts:register' %}">
+                        <i class="fas fa-user-plus me-2"></i>ثبت‌نام کاربر جدید
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="fas fa-search me-2"></i>جستجوی اسناد
+            </h2>
+            <a href="{% url 'docs:upload' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>سند جدید
+            </a>
+        </div>
+
+        <!-- Search Filters -->
+        <div class="card search-card">
+            <div class="search-header">
+                <h5 class="mb-0"><i class="fas fa-filter me-2"></i>فیلترهای جستجو</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" id="searchForm">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="filenameSearch" class="form-label">نام فایل</label>
+                            <input type="text" class="form-control" id="filenameSearch" name="filename"
+                                value="{{ request.GET.filename }}" placeholder="جستجو بر اساس نام فایل...">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="categoryFilter" class="form-label">دسته‌بندی</label>
+                            <select class="form-select" id="categoryFilter" name="category">
+                                <option value="">همه دسته‌ها</option>
+                                {% for value, label in document_categories %}
+                                <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="suffixSearch" class="form-label">پسوند</label>
+                            <input type="text" class="form-control" id="suffixSearch" name="suffix"
+                                value="{{ request.GET.suffix }}" placeholder="جستجو بر اساس پسوند...">
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="fileTypeFilter" class="form-label">نوع فایل</label>
+                            <select class="form-select" id="fileTypeFilter" name="file_type">
+                                <option value="">همه انواع</option>
+                                <option value="pdf" {% if request.GET.file_type == 'pdf' %}selected{% endif %}>PDF
+                                </option>
+                                <option value="doc" {% if request.GET.file_type == 'doc' %}selected{% endif %}>Word
+                                </option>
+                                <option value="xls" {% if request.GET.file_type == 'xls' %}selected{% endif %}>Excel
+                                </option>
+                                <option value="ppt" {% if request.GET.file_type == 'ppt' %}selected{% endif %}>
+                                    PowerPoint</option>
+                                <option value="image" {% if request.GET.file_type == 'image' %}selected{% endif %}>
+                                    تصاویر</option>
+                                <option value="video" {% if request.GET.file_type == 'video' %}selected{% endif %}>ویدئو
+                                </option>
+                                <option value="audio" {% if request.GET.file_type == 'audio' %}selected{% endif %}>صوت
+                                </option>
+                                <option value="archive" {% if request.GET.file_type == 'archive' %}selected{% endif %}>
+                                    فشرده</option>
+                                <option value="other" {% if request.GET.file_type == 'other' %}selected{% endif %}>سایر
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="dateSort" class="form-label">مرتب‌سازی</label>
+                            <select class="form-select" id="dateSort" name="sort">
+                                <option value="-date_created"
+                                    {% if request.GET.sort == '-date_created' %}selected{% endif %}>جدیدترین</option>
+                                <option value="date_created"
+                                    {% if request.GET.sort == 'date_created' %}selected{% endif %}>قدیمی‌ترین</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-2"></i>اعمال فیلترها
+                        </button>
+                        <a href="{% url 'docs:list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>حذف فیلترها
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-between align-items-center p-4 pb-0">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        نتایج جستجو
+                        {% if documents %}
+                        <span class="badge bg-secondary me-2">{{ documents.paginator.count }}</span>
+                        {% endif %}
+                    </h5>
+                </div>
+
+                {% if documents %}
+                <div class="table-responsive">
+                    <table class="table table-hover results-table mb-0">
+                        <thead>
+                            <tr>
+                                <th width="20%">عنوان</th>
+                                <th width="15%">دسته‌بندی</th>
+                                <th width="15%">پسوند</th>
+                                <th width="15%">مسیر فایل</th>
+                                <th width="10%">تاریخ ایجاد</th>
+                                <th width="10%">نوع فایل</th>
+                                <th width="15%">عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for document in documents %}
+                            <tr>
+                                {% load custom_filters %}
+                                <td>
+                                    <i class="fas fa-file-alt me-2 text-primary"></i>
+                                    {{ document.file.name|filename }}
+
+                                <td>
+                                    <span class="badge badge-category">
+                                        {{ document.get_category_display }}
+                                    </span>
+                                </td>
+                                <td>{{ document.suffix|default:"-" }}</td>
+                                <td>
+                                    <small class="text-muted">{{ document.file.name }}</small>
+                                </td>
+                                <td>{{ document.date_created|date:"Y/m/d" }}</td>
+                                <td>
+                                    {% with ext=document.file.name|slice:"-3:"|lower %}
+                                    {% if ext == 'pdf' %}
+                                    <span class="badge badge-pdf">PDF</span>
+                                    {% elif ext in 'doc,docx' %}
+                                    <span class="badge badge-word">Word</span>
+                                    {% elif ext in 'xls,xlsx' %}
+                                    <span class="badge badge-excel">Excel</span>
+                                    {% elif ext in 'ppt,pptx' %}
+                                    <span class="badge badge-powerpoint">PPT</span>
+                                    {% else %}
+                                    <span class="badge badge-other">{{ ext|upper }}</span>
+                                    {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <!-- Preview for images -->
+                                            {% with ext=document.file.name|slice:"-4:"|lower %}
+                                            {% if ext in '.jpg,.jpeg,.png,.gif,.webp,.bmp' %}
+                                            <li>
+                                                <a class="dropdown-item preview-link" href="#"
+                                                    data-img="{{ document.file.url }}"
+                                                    data-title="{{ document.title }}">
+                                                    <i class="fas fa-eye me-2"></i>پیش‌نمایش
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            {% endwith %}
+
+                                            <li>
+                                                <a class="dropdown-item" href="{{ document.file.url }}" download>
+                                                    <i class="fas fa-download me-2"></i>دانلود
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#"
+                                                    {% comment %} onclick="confirmDelete('{{ document.title }}', '{% url 'docs:delete' document.id %}')"> {% endcomment %}
+                                                    onclick="confirmDelete('{{ document.title }}', '{% url 'docs:delete' document.id %}')">
+                                                    <i class="fas fa-trash me-2"></i>حذف
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if documents.has_other_pages %}
+                <div class="p-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if documents.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page={{ documents.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in documents.paginator.page_range %}
+                            {% if documents.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num > documents.number|add:'-3' and num < documents.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if documents.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page={{ documents.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page={{ documents.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-file-search"></i>
+                    </div>
+                    <h4>هیچ سندی یافت نشد</h4>
+                    <p class="text-muted mb-4">با تغییر فیلترهای جستجو می‌توانید نتایج متفاوتی دریافت کنید</p>
+                    <a href="{% url 'docs:list' %}" class="btn btn-primary">
+                        <i class="fas fa-sync-alt me-2"></i>بارگذاری مجدد
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">حذف سند</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                <form id="deleteForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">حذف سند</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalTitle">پیش‌نمایش تصویر</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="previewImage" src="" class="img-fluid" style="max-height: 70vh;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+                <a id="downloadPreview" href="" class="btn btn-primary" download>
+                    <i class="fas fa-download me-2"></i>دانلود
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(title, deleteUrl) {
+    if (confirm(`آیا از حذف "${title}" مطمئن هستید؟`)) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = deleteUrl;
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+// Initialize preview functionality
+document.querySelectorAll('.preview-link').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const imgUrl = this.getAttribute('data-img');
+        const title = this.getAttribute('data-title');
+        
+        document.getElementById('previewImage').src = imgUrl;
+        document.getElementById('previewModalTitle').textContent = `پیش‌نمایش: ${title}`;
+        document.getElementById('downloadPreview').href = imgUrl;
+        
+        const previewModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+        previewModal.show();
+    });
+});
+</script>
+<script>
+    // Delete confirmation function
+    function confirmDelete(title, deleteUrl) {
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        document.getElementById('deleteMessage').textContent = `آیا مطمئن هستید می‌خواهید سند "${title}" را حذف کنید؟`;
+        document.getElementById('deleteForm').action = deleteUrl;
+        modal.show();
+    }
+
+    // Preserve form filters when paginating
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchForm = document.getElementById('searchForm');
+        const paginationLinks = document.querySelectorAll('.pagination a');
+
+        paginationLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const page = this.getAttribute('href').split('page=')[1].split('&')[0];
+                const form = document.createElement('form');
+                form.method = 'GET';
+                form.action = '{% url "docs:list" %}';
+
+                // Add page parameter
+                const pageInput = document.createElement('input');
+                pageInput.type = 'hidden';
+                pageInput.name = 'page';
+                pageInput.value = page;
+                form.appendChild(pageInput);
+
+                // Add existing search parameters
+                {
+                    %
+                    for key, value in request.GET.items %
+                } {
+                    %
+                    if key != 'page' %
+                }
+                const input {
+                    {
+                        forloop.counter
+                    }
+                } = document.createElement('input');
+                input {
+                    {
+                        forloop.counter
+                    }
+                }.type = 'hidden';
+                input {
+                    {
+                        forloop.counter
+                    }
+                }.name = '{{ key }}';
+                input {
+                    {
+                        forloop.counter
+                    }
+                }.value = '{{ value }}';
+                form.appendChild(input {
+                    {
+                        forloop.counter
+                    }
+                }); {
+                    %
+                    endif %
+                } {
+                    %
+                    endfor %
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+    });
+</script>
+{% endblock %}
