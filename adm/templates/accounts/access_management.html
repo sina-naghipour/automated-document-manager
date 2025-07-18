@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}مدیریت دسترسی‌ها{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sidebar {
+        background-color: var(--sidebar-bg);
+        color: var(--sidebar-text);
+        height: 100vh;
+        position: fixed;
+        width: 280px;
+        transition: all 0.3s;
+    }
+
+    .sidebar .nav-link {
+        color: var(--sidebar-text);
+        padding: 12px 20px;
+        margin: 5px 10px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: rgba(214, 193, 182, 0.2);
+    }
+
+    .sidebar .nav-link.active {
+        background-color: var(--primary-medium);
+    }
+
+    .main-content {
+        margin-right: 280px;
+        padding: 25px;
+    }
+
+    .permission-card {
+        border-left: 4px solid var(--primary-medium);
+        transition: all 0.3s;
+    }
+
+    .permission-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .permission-icon {
+        font-size: 1.5rem;
+        color: var(--primary-medium);
+    }
+
+    .module-title {
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .access-level {
+        font-size: 0.85rem;
+        padding: 0.35em 0.65em;
+        border-radius: 4px;
+    }
+
+    .access-full {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .access-partial {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .access-none {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 220px;
+        }
+
+        .main-content {
+            margin-right: 220px;
+            width: calc(100% - 220px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            position: relative;
+            height: auto;
+        }
+
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Sidebar -->
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="fas fa-user-lock me-2"></i>مدیریت دسترسی‌ها</h2>
+            <div class="d-flex align-items-center">
+                <span class="me-3"><i class="fas fa-calendar-alt me-2"></i>امروز: {% now "SHORT_DATE_FORMAT" %}</span>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
+                        <li class="breadcrumb-item"><a href="#">مدیریت کاربران</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">مدیریت دسترسی‌ها</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">تنظیمات دسترسی‌های سیستم</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#saveChangesModal">
+                        <i class="fas fa-save me-2"></i>ذخیره تغییرات
+                    </button>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="roleSelect" class="form-label">انتخاب نقش کاربری</label>
+                        <select class="form-select" id="roleSelect">
+                            <option selected>مدیر سیستم</option>
+                            <option>ویرایشگر</option>
+                            <option>مشاهده‌کننده</option>
+                            <option>میهمان</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="userSelect" class="form-label">انتخاب کاربر خاص (اختیاری)</label>
+                        <select class="form-select" id="userSelect">
+                            <option selected disabled>انتخاب کنید...</option>
+                            <option>محمد رضایی</option>
+                            <option>فاطمه محمدی</option>
+                            <option>علی حسینی</option>
+                            <option>زهرا اکبری</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="module-title"><i class="fas fa-file-alt me-2"></i>مدیریت فایل‌ها</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">آپلود فایل</h6>
+                                        <span class="permission-icon"><i class="fas fa-upload"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="uploadPermission" checked>
+                                        <label class="form-check-label" for="uploadPermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه آپلود فایل‌های جدید به سیستم</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">ویرایش فایل</h6>
+                                        <span class="permission-icon"><i class="fas fa-edit"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="editPermission" checked>
+                                        <label class="form-check-label" for="editPermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه ویرایش اطلاعات فایل‌های موجود</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">حذف فایل</h6>
+                                        <span class="permission-icon"><i class="fas fa-trash-alt"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="deletePermission">
+                                        <label class="form-check-label" for="deletePermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه حذف فایل‌های سیستم</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <h5 class="module-title"><i class="fas fa-users-cog me-2"></i>مدیریت کاربران</h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">ایجاد کاربر</h6>
+                                        <span class="permission-icon"><i class="fas fa-user-plus"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="createUserPermission" checked>
+                                        <label class="form-check-label" for="createUserPermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه ایجاد کاربر جدید</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">ویرایش کاربر</h6>
+                                        <span class="permission-icon"><i class="fas fa-user-edit"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="editUserPermission" checked>
+                                        <label class="form-check-label" for="editUserPermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه ویرایش اطلاعات کاربران</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">حذف کاربر</h6>
+                                        <span class="permission-icon"><i class="fas fa-user-minus"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="deleteUserPermission">
+                                        <label class="form-check-label" for="deleteUserPermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه حذف کاربران سیستم</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">مدیریت نقش‌ها</h6>
+                                        <span class="permission-icon"><i class="fas fa-user-tag"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="manageRolesPermission" checked>
+                                        <label class="form-check-label" for="manageRolesPermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه مدیریت نقش‌های کاربری</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="module-title"><i class="fas fa-cogs me-2"></i>تنظیمات سیستم</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">تنظیمات عمومی</h6>
+                                        <span class="permission-icon"><i class="fas fa-sliders-h"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="generalSettingsPermission">
+                                        <label class="form-check-label" for="generalSettingsPermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه تغییر تنظیمات عمومی سیستم</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">پشتیبان‌گیری</h6>
+                                        <span class="permission-icon"><i class="fas fa-database"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="backupPermission">
+                                        <label class="form-check-label" for="backupPermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه تهیه و بازیابی پشتیبان</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card permission-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">گزارشات سیستم</h6>
+                                        <span class="permission-icon"><i class="fas fa-chart-bar"></i></span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="reportsPermission" checked>
+                                        <label class="form-check-label" for="reportsPermission">دسترسی دارد</label>
+                                    </div>
+                                    <small class="text-muted">اجازه مشاهده گزارشات سیستم</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Save Changes Modal -->
+<div class="modal fade" id="saveChangesModal" tabindex="-1" aria-labelledby="saveChangesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveChangesModalLabel">ذخیره تغییرات دسترسی‌ها</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>آیا از ذخیره تغییرات دسترسی‌های اعمال شده مطمئن هستید؟</p>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="applyToAll">
+                    <label class="form-check-label" for="applyToAll">
+                        اعمال این تغییرات برای تمام کاربران با این نقش
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary">ذخیره تغییرات</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

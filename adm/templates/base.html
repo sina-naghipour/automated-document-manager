@@ -55,6 +55,66 @@
             color: var(--primary-dark);
             border-color: var(--primary-dark);
         }
+
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            height: 100vh;
+            position: fixed;
+            width: 280px;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .sidebar .nav-link {
+            color: var(--sidebar-text);
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(214, 193, 182, 0.2);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--primary-medium);
+        }
+
+        .main-content {
+            margin-right: 280px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+/* Desktop Sidebar */
+.sidebar {
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    height: 100vh;
+    position: fixed;
+    width: 280px;
+    z-index: 100;
+}
+
+/* Mobile Offcanvas Menu */
+.offcanvas.offcanvas-start {
+    right: 0;
+    left: auto;
+    width: 280px;
+}
+
+/* Ensure main content doesn't get hidden */
+.main-content {
+    transition: all 0.3s;
+    width: 100%;
+}
+
+@media (min-width: 992px) {
+    .main-content {
+        margin-right: 280px;
+    }
+}
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -67,39 +127,78 @@
         </button>
     </div>
 
-    {% block content %}{% endblock %}
+    <div class="d-flex">
+    {% include 'partials/sidebar.html' %}
+
+        <!-- Main Content -->
+        <div class="main-content" style='right:0;'>
+            
+            <!-- Mobile Menu Toggle Button -->
+            <button class="btn btn-primary d-lg-none mb-3 sidebar-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu"  type="button">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Theme Toggle Script -->
     <script>
-        // Initialize theme
-        document.addEventListener('DOMContentLoaded', function() {
+    // Initialize theme
+    document.addEventListener('DOMContentLoaded', function() {
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
             const savedTheme = localStorage.getItem('theme') || 'light';
-            const themeToggle = document.getElementById('themeToggle');
             
             if (savedTheme === 'dark') {
                 document.documentElement.setAttribute('data-bs-theme', 'dark');
                 themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
             }
-        });
 
-        // Toggle theme
-        document.getElementById('themeToggle').addEventListener('click', function() {
-            const html = document.documentElement;
-            const isDark = html.getAttribute('data-bs-theme') === 'dark';
-            
-            if (isDark) {
-                html.removeAttribute('data-bs-theme');
-                localStorage.setItem('theme', 'light');
-                this.innerHTML = '<i class="fas fa-moon"></i>';
-            } else {
-                html.setAttribute('data-bs-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                this.innerHTML = '<i class="fas fa-sun"></i>';
-            }
-        });
+            themeToggle.addEventListener('click', function() {
+                const html = document.documentElement;
+                const isDark = html.getAttribute('data-bs-theme') === 'dark';
+                
+                if (isDark) {
+                    html.removeAttribute('data-bs-theme');
+                    localStorage.setItem('theme', 'light');
+                    this.innerHTML = '<i class="fas fa-moon"></i>';
+                } else {
+                    html.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    this.innerHTML = '<i class="fas fa-sun"></i>';
+                }
+            });
+        }
+
+        // Sidebar toggle functionality
+        const sidebar = document.getElementById('mainSidebar');
+        const toggleButtons = document.querySelectorAll('.sidebar-toggle');
+        
+        if (sidebar && toggleButtons.length) {
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth >= 992) return;
+                
+                const isClickInsideSidebar = sidebar.contains(event.target);
+                const isToggleButton = event.target.closest('.sidebar-toggle');
+                
+                if (!isClickInsideSidebar && !isToggleButton) {
+                    sidebar.classList.remove('show');
+                }
+            });
+        }
+    });
     </script>
     
     {% block extra_js %}{% endblock %}

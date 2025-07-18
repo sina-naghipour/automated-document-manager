@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}نقش‌های کاربری{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sidebar {
+        background-color: var(--sidebar-bg);
+        color: var(--sidebar-text);
+        height: 100vh;
+        position: fixed;
+        width: 280px;
+        transition: all 0.3s;
+    }
+
+    .sidebar .nav-link {
+        color: var(--sidebar-text);
+        padding: 12px 20px;
+        margin: 5px 10px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: rgba(214, 193, 182, 0.2);
+    }
+
+    .sidebar .nav-link.active {
+        background-color: var(--primary-medium);
+    }
+
+    .main-content {
+        margin-right: 280px;
+        padding: 25px;
+    }
+
+    .role-card {
+        border-left: 4px solid var(--primary-medium);
+        transition: all 0.3s;
+    }
+
+    .role-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .role-icon {
+        font-size: 1.5rem;
+        color: var(--primary-medium);
+    }
+
+    .users-count {
+        font-size: 0.85rem;
+        padding: 0.35em 0.65em;
+        background-color: #e9ecef;
+        border-radius: 50px;
+    }
+
+    .permissions-badge {
+        font-size: 0.75rem;
+        margin: 2px;
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 220px;
+        }
+
+        .main-content {
+            margin-right: 220px;
+            width: calc(100% - 220px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            position: relative;
+            height: auto;
+        }
+
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Sidebar -->
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="fas fa-user-tag me-2"></i>نقش‌های کاربری</h2>
+            <div class="d-flex align-items-center">
+                <span class="me-3"><i class="fas fa-calendar-alt me-2"></i>امروز: {% now "SHORT_DATE_FORMAT" %}</span>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
+                        <li class="breadcrumb-item"><a href="#">مدیریت کاربران</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">نقش‌های کاربری</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">لیست نقش‌های تعریف شده در سیستم</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newRoleModal">
+                        <i class="fas fa-plus-circle me-2"></i>نقش جدید
+                    </button>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card role-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-0">مدیر سیستم</h5>
+                                    <span class="role-icon"><i class="fas fa-crown"></i></span>
+                                </div>
+                                <p class="card-text text-muted small">دسترسی کامل به تمام بخش‌های سیستم</p>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="users-count">5 کاربر</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2">ویرایش</button>
+                                        <button class="btn btn-sm btn-outline-danger">حذف</button>
+                                    </div>
+                                </div>
+                                <div class="permissions-list">
+                                    <span class="badge bg-primary permissions-badge">همه دسترسی‌ها</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card role-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-0">ویرایشگر</h5>
+                                    <span class="role-icon"><i class="fas fa-edit"></i></span>
+                                </div>
+                                <p class="card-text text-muted small">دسترسی به ایجاد و ویرایش محتوا</p>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="users-count">12 کاربر</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2">ویرایش</button>
+                                        <button class="btn btn-sm btn-outline-danger">حذف</button>
+                                    </div>
+                                </div>
+                                <div class="permissions-list">
+                                    <span class="badge bg-success permissions-badge">ایجاد</span>
+                                    <span class="badge bg-warning text-dark permissions-badge">ویرایش</span>
+                                    <span class="badge bg-info permissions-badge">مشاهده</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card role-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-0">مشاهده‌کننده</h5>
+                                    <span class="role-icon"><i class="fas fa-eye"></i></span>
+                                </div>
+                                <p class="card-text text-muted small">فقط دسترسی مشاهده به محتوا</p>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="users-count">23 کاربر</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2">ویرایش</button>
+                                        <button class="btn btn-sm btn-outline-danger">حذف</button>
+                                    </div>
+                                </div>
+                                <div class="permissions-list">
+                                    <span class="badge bg-info permissions-badge">مشاهده</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card role-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-0">میهمان</h5>
+                                    <span class="role-icon"><i class="fas fa-user-clock"></i></span>
+                                </div>
+                                <p class="card-text text-muted small">دسترسی محدود به بخش‌های عمومی</p>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="users-count">8 کاربر</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2">ویرایش</button>
+                                        <button class="btn btn-sm btn-outline-danger">حذف</button>
+                                    </div>
+                                </div>
+                                <div class="permissions-list">
+                                    <span class="badge bg-secondary permissions-badge">محدود</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card role-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-0">اپراتور</h5>
+                                    <span class="role-icon"><i class="fas fa-headset"></i></span>
+                                </div>
+                                <p class="card-text text-muted small">دسترسی به بخش‌های پشتیبانی</p>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="users-count">3 کاربر</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2">ویرایش</button>
+                                        <button class="btn btn-sm btn-outline-danger">حذف</button>
+                                    </div>
+                                </div>
+                                <div class="permissions-list">
+                                    <span class="badge bg-info permissions-badge">مشاهده</span>
+                                    <span class="badge bg-success permissions-badge">پاسخ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card role-card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-0">حسابدار</h5>
+                                    <span class="role-icon"><i class="fas fa-calculator"></i></span>
+                                </div>
+                                <p class="card-text text-muted small">دسترسی به بخش‌های مالی</p>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="users-count">2 کاربر</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2">ویرایش</button>
+                                        <button class="btn btn-sm btn-outline-danger">حذف</button>
+                                    </div>
+                                </div>
+                                <div class="permissions-list">
+                                    <span class="badge bg-success permissions-badge">ایجاد</span>
+                                    <span class="badge bg-warning text-dark permissions-badge">ویرایش</span>
+                                    <span class="badge bg-info permissions-badge">مشاهده</span>
+                                    <span class="badge bg-primary permissions-badge">گزارشات</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Role Modal -->
+<div class="modal fade" id="newRoleModal" tabindex="-1" aria-labelledby="newRoleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newRoleModalLabel">تعریف نقش جدید</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="roleName" class="form-label">نام نقش</label>
+                            <input type="text" class="form-control" id="roleName" placeholder="مثال: مدیر محتوا">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="roleKey" class="form-label">کلید نقش</label>
+                            <input type="text" class="form-control" id="roleKey" placeholder="مثال: content_manager">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roleDescription" class="form-label">توضیحات</label>
+                        <textarea class="form-control" id="roleDescription" rows="3" placeholder="توضیحات مربوط به این نقش..."></textarea>
+                    </div>
+                    
+                    <h6 class="mb-3">دسترسی‌های این نقش</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">مدیریت فایل‌ها</div>
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="fileUpload">
+                                        <label class="form-check-label" for="fileUpload">آپلود فایل</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="fileEdit">
+                                        <label class="form-check-label" for="fileEdit">ویرایش فایل</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="fileDelete">
+                                        <label class="form-check-label" for="fileDelete">حذف فایل</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="fileDownload">
+                                        <label class="form-check-label" for="fileDownload">دانلود فایل</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">مدیریت کاربران</div>
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="userCreate">
+                                        <label class="form-check-label" for="userCreate">ایجاد کاربر</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="userEdit">
+                                        <label class="form-check-label" for="userEdit">ویرایش کاربر</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="userDelete">
+                                        <label class="form-check-label" for="userDelete">حذف کاربر</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="userView">
+                                        <label class="form-check-label" for="userView">مشاهده کاربران</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary">ذخیره نقش</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

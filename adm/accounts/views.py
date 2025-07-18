@@ -131,3 +131,26 @@ class Logout(View):
         else:
             logout(request)
             return redirect('accounts:login')
+    
+
+
+class CreateUserView(View):
+    template_name = 'accounts/create_user.html'
+    def get(self, request):
+        return render(request, self.template_name)
+
+
+class EditUserView(View):
+    template_name = 'accounts/edit_users.html'
+    def get(self, request):
+        return render(request, self.template_name)
+
+class RoleManagement(View):
+    template_name = 'accounts/role_management.html'
+    def get(self, request):
+        return render(request, self.template_name)
+
+class AccessManagementView(View):
+    template_name = 'accounts/access_management.html'
+    def get(self, request):
+        return render(request, self.template_name)

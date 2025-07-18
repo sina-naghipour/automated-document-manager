@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ویرایش کاربران{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sidebar {
+        background-color: var(--sidebar-bg);
+        color: var(--sidebar-text);
+        height: 100vh;
+        position: fixed;
+        width: 280px;
+        transition: all 0.3s;
+    }
+
+    .sidebar .nav-link {
+        color: var(--sidebar-text);
+        padding: 12px 20px;
+        margin: 5px 10px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: rgba(214, 193, 182, 0.2);
+    }
+
+    .sidebar .nav-link.active {
+        background-color: var(--primary-medium);
+    }
+
+    .main-content {
+        margin-right: 280px;
+        padding: 25px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+
+    .status-active {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-inactive {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .status-suspended {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .search-box {
+        position: relative;
+    }
+
+    .search-box .form-control {
+        padding-right: 40px;
+    }
+
+    .search-box .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 220px;
+        }
+
+        .main-content {
+            margin-right: 220px;
+            width: calc(100% - 220px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            position: relative;
+            height: auto;
+        }
+
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Sidebar -->
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="fas fa-user-edit me-2"></i>ویرایش کاربران</h2>
+            <div class="d-flex align-items-center">
+                <span class="me-3"><i class="fas fa-calendar-alt me-2"></i>امروز: {% now "SHORT_DATE_FORMAT" %}</span>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
+                        <li class="breadcrumb-item"><a href="#">مدیریت کاربران</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">ویرایش کاربران</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">لیست کاربران سیستم</h5>
+                    <a href="{% url 'accounts:create_user' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-2"></i>کاربر جدید
+                    </a>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="search-box">
+                            <input type="text" class="form-control" placeholder="جستجوی کاربر...">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select">
+                            <option selected>همه نقش‌ها</option>
+                            <option>مدیر سیستم</option>
+                            <option>ویرایشگر</option>
+                            <option>مشاهده‌کننده</option>
+                            <option>میهمان</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select">
+                            <option selected>همه وضعیت‌ها</option>
+                            <option>فعال</option>
+                            <option>غیرفعال</option>
+                            <option>معلق</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>کاربر</th>
+                                <th>نقش</th>
+                                <th>وضعیت</th>
+                                <th>تاریخ عضویت</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{% static 'images/avatar.svg' %}" alt="User" class="user-avatar me-3">
+                                        <div>
+                                            <h6 class="mb-0">محمد رضایی</h6>
+                                            <small class="text-muted">m.rezaei@example.com</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>مدیر سیستم</td>
+                                <td>
+                                    <span class="badge status-badge status-active">فعال</span>
+                                </td>
+                                <td>۱۴۰۲/۰۵/۱۵</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown1" data-bs-toggle="dropdown">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown1">
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>ویرایش</a></li>
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock me-2"></i>تغییر رمز</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{% static 'images/avatar.svg' %}" alt="User" class="user-avatar me-3">
+                                        <div>
+                                            <h6 class="mb-0">فاطمه محمدی</h6>
+                                            <small class="text-muted">f.mohammadi@example.com</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>ویرایشگر</td>
+                                <td>
+                                    <span class="badge status-badge status-active">فعال</span>
+                                </td>
+                                <td>۱۴۰۲/۰۶/۰۲</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown2" data-bs-toggle="dropdown">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown2">
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>ویرایش</a></li>
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock me-2"></i>تغییر رمز</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{% static 'images/avatar.svg' %}" alt="User" class="user-avatar me-3">
+                                        <div>
+                                            <h6 class="mb-0">علی حسینی</h6>
+                                            <small class="text-muted">a.hosseini@example.com</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>مشاهده‌کننده</td>
+                                <td>
+                                    <span class="badge status-badge status-suspended">معلق</span>
+                                </td>
+                                <td>۱۴۰۲/۰۴/۲۸</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown3" data-bs-toggle="dropdown">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown3">
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>ویرایش</a></li>
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock me-2"></i>تغییر رمز</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{% static 'images/avatar.svg' %}" alt="User" class="user-avatar me-3">
+                                        <div>
+                                            <h6 class="mb-0">زهرا اکبری</h6>
+                                            <small class="text-muted">z.akbari@example.com</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>میهمان</td>
+                                <td>
+                                    <span class="badge status-badge status-inactive">غیرفعال</span>
+                                </td>
+                                <td>۱۴۰۲/۰۳/۱۰</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown4" data-bs-toggle="dropdown">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown4">
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>ویرایش</a></li>
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock me-2"></i>تغییر رمز</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">قبلی</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">بعدی</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
