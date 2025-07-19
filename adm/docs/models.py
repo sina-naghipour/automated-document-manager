@@ -79,10 +79,44 @@ class Document(models.Model):
     suffix = models.CharField(max_length=80)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
-
+    def get_icon(self):
+        file_types = {
+            'image': 'image',
+            'pdf': 'file-pdf',
+            'doc': 'file-word',
+            'video': 'file-video',
+            # Add more mappings as needed
+        }
+        return file_types.get(self.file_type, 'file')
+    
+    @property
+    def file_type(self):
+        ext = os.path.splitext(self.file.name)[1].lower()
+        if ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']:
+            return 'image'
+        elif ext in ['.mp4', '.mov', '.avi', '.mkv', '.webm']:
+            return 'video'
+        elif ext in ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt']:
+            return 'document'
+        else:
+            return 'misc'
+        
+    def get_color(self):
+        colors = {
+            'image': 'primary',
+            'pdf': 'danger',
+            'doc': 'info',
+            'video': 'warning',
+            # Add more mappings as needed
+        }
+        return colors.get(self.file_type, 'secondary')
+    
     class Meta:
         verbose_name = 'Document'
         verbose_name_plural = 'Documents'
 
     def __str__(self):
         return f"{self.title} ({self.get_category_display()})"
+    
+    
+    

@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}جزئیات کاربر - {{ user.get_full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .user-profile-card {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .user-avatar-lg {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--border-color);
+    }
+    
+    .profile-section {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .info-label {
+        font-weight: 500;
+        color: var(--text-muted);
+        min-width: 120px;
+        display: inline-block;
+    }
+    
+    .info-value {
+        font-weight: 400;
+    }
+    
+    .permission-badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+        margin-right: 5px;
+        background-color: var(--primary-light);
+        color: var(--primary-dark);
+    }
+    
+    .permissions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        margin-top: 0.15em;
+    }
+    
+    .form-check-label {
+        margin-right: 0.5rem;
+    }
+    
+    .active-badge {
+        background-color: var(--bs-success);
+        color: white;
+    }
+    
+    .inactive-badge {
+        background-color: var(--bs-secondary);
+        color: white;
+    }
+    
+    .form-switch .form-check-input {
+        width: 2.5em;
+        height: 1.5em;
+        margin-right: -2.5em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0"><i class="fas fa-user-circle me-2"></i>جزئیات کاربر</h2>
+            <div class="d-flex align-items-center">
+                <span class="me-3"><i class="fas fa-calendar-alt me-2"></i>امروز: {% now "SHORT_DATE_FORMAT" %}</span>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'accounts:edit_user' %}">مدیریت کاربران</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">جزئیات کاربر</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="user-profile-card">
+            <!-- Profile Section -->
+            <div class="profile-section">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center mb-4 mb-md-0">
+                        <img src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/avatar.svg' %}{% endif %}" 
+                             alt="User" class="user-avatar-lg">
+                    </div>
+                    <div class="col-md-9">
+                        <h3 class="mb-3">{{ user.get_full_name }}</h3>
+                        <div class="mb-2">
+                            <span class="badge {% if user.is_active %}active-badge{% else %}inactive-badge{% endif %}">
+                                {% if user.is_active %}فعال{% else %}غیرفعال{% endif %}
+                            </span>
+                            <span class="badge bg-secondary ms-2">{{ user.get_role_display }}</span>
+                        </div>
+                        <div class="d-flex flex-wrap">
+                            {% for perm in user.get_permissions_list %}
+                                <span class="permission-badge">{{ perm }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Details -->
+            <div class="profile-section">
+                <h5 class="mb-4"><i class="fas fa-info-circle me-2"></i>اطلاعات کاربری</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div><span class="info-label">نام کاربری:</span> <span class="info-value">{{ user.username }}</span></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div><span class="info-label">ایمیل:</span> <span class="info-value">{{ user.email }}</span></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div><span class="info-label">تاریخ عضویت:</span> <span class="info-value">{{ user.date_joined|date:"Y/m/d" }}</span></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div><span class="info-label">آخرین ورود:</span> <span class="info-value">{{ user.last_login|date:"Y/m/d H:i"|default:"هرگز" }}</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Change Password Section -->
+            <div class="profile-section">
+                <h5 class="mb-4"><i class="fas fa-lock me-2"></i>تغییر رمز عبور</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="change_password" value="1">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">رمز عبور فعلی</label>
+                            {{ password_form.old_password }}
+                            {% if password_form.old_password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ password_form.old_password.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">رمز عبور جدید</label>
+                            {{ password_form.new_password1 }}
+                            {% if password_form.new_password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ password_form.new_password1.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">تکرار رمز عبور</label>
+                            {{ password_form.new_password2 }}
+                            {% if password_form.new_password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ password_form.new_password2.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>ذخیره تغییرات
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Permissions Section -->
+            <div class="profile-section">
+                <h5 class="mb-4"><i class="fas fa-user-shield me-2"></i>مدیریت دسترسی‌ها</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="update_permissions" value="1">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">نقش کاربری</label>
+                            {{ permissions_form.role }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch">
+                                {{ permissions_form.is_active }}
+                                <label class="form-check-label" for="{{ permissions_form.is_active.id_for_label }}">
+                                    حساب فعال
+                                </label>
+                            </div>
+                            <small class="text-muted">تعیین می‌کند آیا کاربر می‌تواند وارد سیستم شود یا خیر</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label mb-2">دسترسی‌های ویژه</label>
+                        <div class="permissions-grid">
+                            <div class="form-check">
+                                {{ permissions_form.create_permission }}
+                                <label class="form-check-label" for="{{ permissions_form.create_permission.id_for_label }}">
+                                    <i class="fas fa-plus-circle me-2"></i>ایجاد محتوا
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ permissions_form.edit_permission }}
+                                <label class="form-check-label" for="{{ permissions_form.edit_permission.id_for_label }}">
+                                    <i class="fas fa-edit me-2"></i>ویرایش محتوا
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ permissions_form.delete_permission }}
+                                <label class="form-check-label" for="{{ permissions_form.delete_permission.id_for_label }}">
+                                    <i class="fas fa-trash-alt me-2"></i>حذف محتوا
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ permissions_form.manage_permission }}
+                                <label class="form-check-label" for="{{ permissions_form.manage_permission.id_for_label }}">
+                                    <i class="fas fa-users-cog me-2"></i>مدیریت کاربران
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>ذخیره دسترسی‌ها
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'accounts:edit_user' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-right me-2"></i>بازگشت به لیست
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

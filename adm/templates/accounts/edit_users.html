@@ -5,101 +5,22 @@
 
 {% block extra_css %}
 <style>
-    .sidebar {
-        background-color: var(--sidebar-bg);
-        color: var(--sidebar-text);
-        height: 100vh;
-        position: fixed;
-        width: 280px;
-        transition: all 0.3s;
-    }
-
-    .sidebar .nav-link {
-        color: var(--sidebar-text);
-        padding: 12px 20px;
-        margin: 5px 10px;
-        border-radius: 6px;
-        transition: all 0.2s;
-    }
-
-    .sidebar .nav-link:hover {
-        background-color: rgba(214, 193, 182, 0.2);
-    }
-
-    .sidebar .nav-link.active {
-        background-color: var(--primary-medium);
-    }
-
-    .main-content {
-        margin-right: 280px;
-        padding: 25px;
-    }
-
+        /* Avatar styling */
     .user-avatar {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         object-fit: cover;
+        border: 2px solid #eee;
     }
-
-    .status-badge {
-        font-size: 0.75rem;
-        padding: 0.35em 0.65em;
+    /* Your existing CSS styles remain the same */
+    .user-actions .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
     }
-
-    .status-active {
-        background-color: #d1fae5;
-        color: #065f46;
-    }
-
-    .status-inactive {
-        background-color: #fee2e2;
-        color: #b91c1c;
-    }
-
-    .status-suspended {
-        background-color: #fef3c7;
-        color: #92400e;
-    }
-
-    .search-box {
-        position: relative;
-    }
-
-    .search-box .form-control {
-        padding-right: 40px;
-    }
-
-    .search-box .search-icon {
-        position: absolute;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6c757d;
-    }
-
-    @media (max-width: 992px) {
-        .sidebar {
-            width: 220px;
-        }
-
-        .main-content {
-            margin-right: 220px;
-            width: calc(100% - 220px);
-        }
-    }
-
-    @media (max-width: 768px) {
-        .sidebar {
-            width: 100%;
-            position: relative;
-            height: auto;
-        }
-
-        .main-content {
-            margin-right: 0;
-            width: 100%;
-        }
+    
+    .table th {
+        white-space: nowrap;
     }
 </style>
 {% endblock %}
@@ -140,26 +61,26 @@
 
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <div class="search-box">
-                            <input type="text" class="form-control" placeholder="جستجوی کاربر...">
-                            <i class="fas fa-search search-icon"></i>
-                        </div>
+                        <form method="get">
+                            <div class="search-box">
+                                <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="جستجوی کاربر...">
+                                <i class="fas fa-search search-icon"></i>
+                            </div>
+                        </form>
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select">
-                            <option selected>همه نقش‌ها</option>
-                            <option>مدیر سیستم</option>
-                            <option>ویرایشگر</option>
-                            <option>مشاهده‌کننده</option>
-                            <option>میهمان</option>
+                        <select class="form-select" id="role-filter">
+                            <option value="">همه نقش‌ها</option>
+                            {% for value, label in user_roles %}
+                            <option value="{{ value }}" {% if request.GET.role == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select">
-                            <option selected>همه وضعیت‌ها</option>
-                            <option>فعال</option>
-                            <option>غیرفعال</option>
-                            <option>معلق</option>
+                        <select class="form-select" id="status-filter">
+                            <option value="">همه وضعیت‌ها</option>
+                            <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>فعال</option>
+                            <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>غیرفعال</option>
                         </select>
                     </div>
                 </div>
@@ -177,145 +98,104 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for user in users %}
                             <tr>
-                                <td>1</td>
+                                <td>{{ forloop.counter }}</td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <img src="{% static 'images/avatar.svg' %}" alt="User" class="user-avatar me-3">
                                         <div>
-                                            <h6 class="mb-0">محمد رضایی</h6>
-                                            <small class="text-muted">m.rezaei@example.com</small>
+                                            <h6 class="mb-0">{{ user.get_full_name }}</h6>
+                                            <small class="text-muted">{{ user.email }}</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>مدیر سیستم</td>
+                                <td>{{ user.get_role_display }}</td>
                                 <td>
-                                    <span class="badge status-badge status-active">فعال</span>
+                                    <span class="badge status-badge {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                        {% if user.is_active %}فعال{% else %}غیرفعال{% endif %}
+                                    </span>
                                 </td>
-                                <td>۱۴۰۲/۰۵/۱۵</td>
-                                <td>
+                                <td>{{ user.date_joined|date:"Y/m/d" }}</td>
+                                <td class="user-actions">
                                     <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown1" data-bs-toggle="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown{{ user.id }}" data-bs-toggle="dropdown">
                                             <i class="fas fa-cog"></i>
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown1">
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>ویرایش</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock me-2"></i>تغییر رمز</a></li>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown{{ user.id }}">
+                                            <li><a class="dropdown-item" href="{% url 'accounts:detail_user' user.id %}"><i class="fas fa-edit me-2"></i>ویرایش</a></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
+                                            <li>
+                                                <form method="post" action="{% url 'accounts:delete_user' user.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="dropdown-item text-danger" onclick="return confirm('آیا از حذف این کاربر مطمئن هستید؟')">
+                                                        <i class="fas fa-trash-alt me-2"></i>حذف
+                                                    </button>
+                                                </form>
+                                            </li>
                                         </ul>
                                     </div>
                                 </td>
                             </tr>
+                            {% empty %}
                             <tr>
-                                <td>2</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <img src="{% static 'images/avatar.svg' %}" alt="User" class="user-avatar me-3">
-                                        <div>
-                                            <h6 class="mb-0">فاطمه محمدی</h6>
-                                            <small class="text-muted">f.mohammadi@example.com</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>ویرایشگر</td>
-                                <td>
-                                    <span class="badge status-badge status-active">فعال</span>
-                                </td>
-                                <td>۱۴۰۲/۰۶/۰۲</td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown2" data-bs-toggle="dropdown">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown2">
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>ویرایش</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock me-2"></i>تغییر رمز</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
-                                        </ul>
-                                    </div>
-                                </td>
+                                <td colspan="6" class="text-center py-4">هیچ کاربری یافت نشد</td>
                             </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <img src="{% static 'images/avatar.svg' %}" alt="User" class="user-avatar me-3">
-                                        <div>
-                                            <h6 class="mb-0">علی حسینی</h6>
-                                            <small class="text-muted">a.hosseini@example.com</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>مشاهده‌کننده</td>
-                                <td>
-                                    <span class="badge status-badge status-suspended">معلق</span>
-                                </td>
-                                <td>۱۴۰۲/۰۴/۲۸</td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown3" data-bs-toggle="dropdown">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown3">
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>ویرایش</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock me-2"></i>تغییر رمز</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <img src="{% static 'images/avatar.svg' %}" alt="User" class="user-avatar me-3">
-                                        <div>
-                                            <h6 class="mb-0">زهرا اکبری</h6>
-                                            <small class="text-muted">z.akbari@example.com</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>میهمان</td>
-                                <td>
-                                    <span class="badge status-badge status-inactive">غیرفعال</span>
-                                </td>
-                                <td>۱۴۰۲/۰۳/۱۰</td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown4" data-bs-toggle="dropdown">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown4">
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>ویرایش</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-lock me-2"></i>تغییر رمز</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>حذف</a></li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
 
+                {% if is_paginated %}
                 <nav aria-label="Page navigation">
                     <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">قبلی</a>
+                        </li>
+                        {% else %}
                         <li class="page-item disabled">
                             <a class="page-link" href="#" tabindex="-1" aria-disabled="true">قبلی</a>
                         </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                            {% else %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="#">بعدی</a>
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.role %}&role={{ request.GET.role }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">بعدی</a>
                         </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">بعدی</a>
+                        </li>
+                        {% endif %}
                     </ul>
                 </nav>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Filter functionality
+    document.getElementById('role-filter').addEventListener('change', function() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('role', this.value);
+        window.location.search = params.toString();
+    });
+    
+    document.getElementById('status-filter').addEventListener('change', function() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('status', this.value);
+        window.location.search = params.toString();
+    });
+</script>
 {% endblock %}

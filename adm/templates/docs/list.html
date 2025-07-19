@@ -206,74 +206,6 @@
 {% block content %}
 <div class="d-flex">
 
-    <!-- Mobile Menu (Offcanvas) -->
-    <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="mobileMenuLabel">منو</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#">
-                        <i class="fas fa-tachometer-alt me-2"></i>داشبورد
-                    </a>
-                </li>
-
-                <!-- File Management Mobile -->
-                <li class="nav-item mt-2">
-                    <a class="nav-link" data-bs-toggle="collapse" href="#mobileFileManagement">
-                        <i class="fas fa-folder-open me-2"></i>مدیریت فایل‌ها
-                        <i class="fas fa-angle-down float-start mt-1"></i>
-                    </a>
-                    <div class="collapse show" id="mobileFileManagement">
-                        <ul class="nav flex-column ps-4">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-images me-2"></i>عکس‌ها
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-file-alt me-2"></i>اسناد
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-video me-2"></i>ویدئوها
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">
-                                    <i class="fas fa-archive me-2"></i>متفرقه
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-
-                <!-- Auth Links -->
-                {% if request.user.is_authenticated %}
-                <li class="nav-item mt-3">
-                    <a class="nav-link text-danger" href="{% url 'accounts:logout' %}">
-                        <i class="fas fa-sign-out-alt me-2"></i>خروج از سیستم
-                    </a>
-                </li>
-                {% else %}
-                <li class="nav-item mt-3">
-                    <a class="nav-link text-success" href="{% url 'accounts:login' %}">
-                        <i class="fas fa-sign-in-alt me-2"></i>ورود به سیستم
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-primary" href="{% url 'accounts:register' %}">
-                        <i class="fas fa-user-plus me-2"></i>ثبت‌نام کاربر جدید
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
     <!-- Main Content -->
     <div class="main-content">
         <!-- Page Header -->
@@ -454,6 +386,7 @@
                                             <li>
                                                 <hr class="dropdown-divider">
                                             </li>
+                                            {% if request.user.is_deletor %}
                                             <li>
                                                 <a class="dropdown-item text-danger" href="#"
                                                     {% comment %} onclick="confirmDelete('{{ document.title }}', '{% url 'docs:delete' document.id %}')"> {% endcomment %}
@@ -461,6 +394,7 @@
                                                     <i class="fas fa-trash me-2"></i>حذف
                                                 </a>
                                             </li>
+                                            {% endif %}
                                         </ul>
                                     </div>
                                 </td>

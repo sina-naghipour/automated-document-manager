@@ -126,7 +126,20 @@
             <i class="fas fa-moon"></i>
         </button>
     </div>
-
+{% if messages %}
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow" role="alert" 
+         style="background-color: {% if message.tags == 'error' %}var(--bs-danger-bg-subtle){% elif message.tags == 'success' %}var(--bs-success-bg-subtle){% else %}var(--bs-info-bg-subtle){% endif %}; 
+                border-color: {% if message.tags == 'error' %}var(--bs-danger-border-subtle){% elif message.tags == 'success' %}var(--bs-success-border-subtle){% else %}var(--bs-info-border-subtle){% endif %}; 
+                color: {% if message.tags == 'error' %}var(--bs-danger-text){% elif message.tags == 'success' %}var(--bs-success-text){% else %}var(--bs-info-text){% endif %}; 
+                opacity: 1 !important;">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
     <div class="d-flex">
     {% include 'partials/sidebar.html' %}
 
@@ -199,8 +212,24 @@
             });
         }
     });
-    </script>
     
+    </script>
+{% if messages %}
+
+    <script>
+// Auto-dismiss alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+</script>
+    {% endif %}
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

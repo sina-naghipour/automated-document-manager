@@ -5,8 +5,6 @@
 
 {% block extra_css %}
 <style>
-
-
     .main-content {
         margin-right: 280px;
         padding: 25px;
@@ -101,6 +99,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="d-flex">
 
 
@@ -112,7 +111,7 @@
                 <span class="me-3"><i class="fas fa-calendar-alt me-2"></i>امروز: {% now "SHORT_DATE_FORMAT" %}</span>
             </div>
         </div>
-
+        {%if request.user.is_creator%}
         <!-- Upload Section -->
         <div class="card mb-4 border-0 shadow-sm">
             <div class="card-body">
@@ -181,6 +180,7 @@
                 </form>
             </div>
         </div>
+        {% endif %}
         <!-- File Type Summary -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -189,9 +189,9 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="text-muted">عکس‌ها</h6>
-                                <h3>۱,۲۴۵</h3>
+                                <h3>{{ image_count }}</h3>
                             </div>
-                            <span class="file-icon"><i class="fas fa-images"></i></span>
+                            <span class="file-icon"><i class="fas fa-images text-primary"></i></span>
                         </div>
                     </div>
                 </div>
@@ -202,9 +202,9 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="text-muted">اسناد</h6>
-                                <h3>۸۷۶</h3>
+                                <h3>{{ doc_count }}</h3>
                             </div>
-                            <span class="file-icon"><i class="fas fa-file-alt"></i></span>
+                            <span class="file-icon"><i class="fas fa-file-alt text-info"></i></span>
                         </div>
                     </div>
                 </div>
@@ -215,9 +215,9 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="text-muted">ویدئوها</h6>
-                                <h3>۳۲۱</h3>
+                                <h3>{{ video_count }}</h3>
                             </div>
-                            <span class="file-icon"><i class="fas fa-video"></i></span>
+                            <span class="file-icon"><i class="fas fa-video text-danger"></i></span>
                         </div>
                     </div>
                 </div>
@@ -228,60 +228,65 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="text-muted">متفرقه</h6>
-                                <h3>۱۵۶</h3>
+                                <h3>{{ misc_count }}</h3>
                             </div>
-                            <span class="file-icon"><i class="fas fa-archive"></i></span>
+                            <span class="file-icon"><i class="fas fa-archive text-secondary"></i></span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Recent Uploads -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title mb-4"><i class="fas fa-history me-2"></i>آخرین فایل‌های آپلود شده</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>نام فایل</th>
-                                <th>نوع</th>
-                                <th>مخزن</th>
-                                <th>تاریخ آپلود</th>
-                                <th>عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <i class="fas fa-image me-2 text-primary"></i>
-                                    تصویر-پروفایل.jpg
-                                </td>
-                                <td>عکس</td>
-                                <td>مخزن کاربران</td>
-                                <td>امروز، ۱۴:۳۰</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary">مدیریت</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <i class="fas fa-file-pdf me-2 text-danger"></i>
-                                    قرارداد-فروش.pdf
-                                </td>
-                                <td>سند</td>
-                                <td>مخزن اسناد</td>
-                                <td>دیروز، ۱۱:۱۵</td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary">مدیریت</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+<!-- Recent Uploads Section -->
+<div class="profile-section">
+    <h5 class="mb-4"><i class="fas fa-history me-2"></i>آخرین فایل‌های آپلود شده</h5>
+    {% if documents %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>عنوان</th>
+                    <th>نوع</th>
+                    <th>تاریخ آپلود</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in documents %}
+                <tr>
+                    <td>
+                        <i class="fas 
+                            {% if doc.category == 's' %}fa-coins text-warning
+                            {% elif doc.category == 'm' %}fa-book text-info
+                            {% elif doc.category == 'st' %}fa-user-graduate text-primary
+                            {% else %}fa-file text-secondary
+                            {% endif %} me-2"></i>
+                        {{ doc.file.name }}
+                    </td>
+                    <td>{{ doc.get_category_display }}</td>
+                    <td>
+                        {% if doc.date_created.date == now.date %}
+                            امروز، {{ doc.date_created|time:"H:i" }}
+                        {% else %}
+                            {{ doc.date_created|date:"Y/m/d" }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-primary" download>
+                            <i class="fas fa-download me-1"></i>دانلود
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        هنوز هیچ فایلی آپلود نکرده‌اید.
+    </div>
+    {% endif %}
+</div>
     </div>
 </div>
 
@@ -424,6 +429,5 @@
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
-    
 </script>
 {% endblock %}

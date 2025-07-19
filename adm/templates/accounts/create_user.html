@@ -1,40 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}ایجاد کاربر جدید{% endblock %}
-
 {% block extra_css %}
 <style>
-    .sidebar {
-        background-color: var(--sidebar-bg);
-        color: var(--sidebar-text);
-        height: 100vh;
-        position: fixed;
-        width: 280px;
-        transition: all 0.3s;
-    }
-
-    .sidebar .nav-link {
-        color: var(--sidebar-text);
-        padding: 12px 20px;
-        margin: 5px 10px;
-        border-radius: 6px;
-        transition: all 0.2s;
-    }
-
-    .sidebar .nav-link:hover {
-        background-color: rgba(214, 193, 182, 0.2);
-    }
-
-    .sidebar .nav-link.active {
-        background-color: var(--primary-medium);
-    }
-
-    .main-content {
-        margin-right: 280px;
-        padding: 25px;
-    }
-
     .user-form-container {
         background-color: var(--card-bg);
         border-radius: 10px;
@@ -48,275 +16,199 @@
         margin-bottom: 30px;
     }
 
-    .avatar-upload {
-        position: relative;
-        width: 120px;
-        height: 120px;
-        margin: 0 auto 20px;
+    .form-section h5 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
     }
 
-    .avatar-upload .avatar-preview {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background-color: #f5f5f5;
-        border: 2px solid var(--border-color);
-        overflow: hidden;
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
     }
 
-    .avatar-upload .avatar-edit {
-        position: absolute;
-        right: 0;
-        bottom: 0;
+    .form-control, .form-select {
+        border-radius: 6px;
+        padding: 10px 15px;
+        border: 1px solid var(--border-color);
+        background-color: var(--input-bg);
     }
 
-    .avatar-upload .avatar-edit input {
-        display: none;
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        margin-top: 0.15em;
     }
 
-    .avatar-upload .avatar-edit label {
-        display: inline-block;
-        width: 34px;
-        height: 34px;
-        background-color: var(--primary-medium);
-        color: white;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 34px;
-        cursor: pointer;
+    .form-check-label {
+        margin-right: 0.5rem;
     }
 
-    @media (max-width: 992px) {
-        .sidebar {
-            width: 220px;
-        }
-
-        .main-content {
-            margin-right: 220px;
-            width: calc(100% - 220px);
-        }
+    .permissions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
     }
 
-    @media (max-width: 768px) {
-        .sidebar {
-            width: 100%;
-            position: relative;
-            height: auto;
-        }
-
-        .main-content {
-            margin-right: 0;
-            width: 100%;
-        }
+    .invalid-feedback {
+        color: var(--danger);
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="d-flex">
-    <!-- Sidebar -->
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-user-plus me-2"></i>ایجاد کاربر جدید</h2>
+    </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0"><i class="fas fa-user-plus me-2"></i>ایجاد کاربر جدید</h2>
-            <div class="d-flex align-items-center">
-                <span class="me-3"><i class="fas fa-calendar-alt me-2"></i>امروز: {% now "SHORT_DATE_FORMAT" %}</span>
+    <div class="user-form-container">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <!-- Personal Information Section -->
+            <div class="form-section">
+                <h5><i class="fas fa-user-circle me-2"></i>اطلاعات پایه</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">نام</label>
+                        {{ form.first_name }}
+                        {% for error in form.first_name.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">نام خانوادگی</label>
+                        {{ form.last_name }}
+                        {% for error in form.last_name.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="#">داشبورد</a></li>
-                        <li class="breadcrumb-item"><a href="#">مدیریت کاربران</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">ایجاد کاربر جدید</li>
-                    </ol>
-                </nav>
+            
+            <!-- Login Information Section -->
+            <div class="form-section">
+                <h5><i class="fas fa-key me-2"></i>اطلاعات ورود</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">نام کاربری</label>
+                        {{ form.username }}
+                        {% for error in form.username.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">ایمیل</label>
+                        {{ form.email }}
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">رمز عبور</label>
+                        {{ form.password1 }}
+                        {% for error in form.password1.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                        <small class="text-muted">حداقل ۸ کاراکتر شامل حروف و اعداد</small>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">تکرار رمز عبور</label>
+                        {{ form.password2 }}
+                        {% for error in form.password2.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <div class="user-form-container">
-            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
-                {% csrf_token %}
+            
+            <!-- Permissions Section -->
+            <div class="form-section">
+                <h5><i class="fas fa-user-shield me-2"></i>دسترسی‌ها</h5>
                 
-                <div class="form-section">
-                    <h5 class="mb-4"><i class="fas fa-user-circle me-2"></i>اطلاعات شخصی</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.role.id_for_label }}" class="form-label">نقش کاربری</label>
+                        {{ form.role }}
+                        {% for error in form.role.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="firstName" class="form-label">نام</label>
-                            <input type="text" class="form-control" id="firstName" name="first_name" required>
-                            <div class="invalid-feedback">
-                                لطفاً نام را وارد کنید.
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="lastName" class="form-label">نام خانوادگی</label>
-                            <input type="text" class="form-control" id="lastName" name="last_name" required>
-                            <div class="invalid-feedback">
-                                لطفاً نام خانوادگی را وارد کنید.
-                            </div>
+                    <div class="col-md-6">
+                        <label class="form-label">وضعیت حساب</label>
+                        <div class="form-check form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                حساب فعال
+                            </label>
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="nationalCode" class="form-label">کد ملی</label>
-                            <input type="text" class="form-control" id="nationalCode" name="national_code" required>
-                            <div class="invalid-feedback">
-                                لطفاً کد ملی را وارد کنید.
+                    <div class="col-12">
+                        <label class="form-label mb-2">دسترسی‌های ویژه</label>
+                        <div class="permissions-grid">
+                            <div class="form-check">
+                                {{ form.create_permission }}
+                                <label class="form-check-label" for="{{ form.create_permission.id_for_label }}">
+                                    <i class="fas fa-plus-circle me-2"></i>ایجاد محتوا
+                                </label>
                             </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="mobile" class="form-label">شماره موبایل</label>
-                            <input type="tel" class="form-control" id="mobile" name="mobile" required>
-                            <div class="invalid-feedback">
-                                لطفاً شماره موبایل را وارد کنید.
+                            <div class="form-check">
+                                {{ form.edit_permission }}
+                                <label class="form-check-label" for="{{ form.edit_permission.id_for_label }}">
+                                    <i class="fas fa-edit me-2"></i>ویرایش محتوا
+                                </label>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="avatar-upload">
-                        <div class="avatar-preview">
-                            <img id="imagePreview" src="{% static 'images/avatar.svg' %}" alt="تصویر پروفایل" style="width:100%; height:100%; object-fit:cover;">
-                        </div>
-                        <div class="avatar-edit">
-                            <input type="file" id="imageUpload" name="avatar" accept=".png, .jpg, .jpeg">
-                            <label for="imageUpload"><i class="fas fa-pencil-alt"></i></label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-section">
-                    <h5 class="mb-4"><i class="fas fa-key me-2"></i>اطلاعات ورود</h5>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="username" class="form-label">نام کاربری</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
-                            <div class="invalid-feedback">
-                                لطفاً نام کاربری را وارد کنید.
+                            <div class="form-check">
+                                {{ form.delete_permission }}
+                                <label class="form-check-label" for="{{ form.delete_permission.id_for_label }}">
+                                    <i class="fas fa-trash-alt me-2"></i>حذف محتوا
+                                </label>
                             </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">ایمیل</label>
-                            <input type="email" class="form-control" id="email" name="email">
-                            <div class="invalid-feedback">
-                                لطفاً یک ایمیل معتبر وارد کنید.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="password" class="form-label">رمز عبور</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                            <div class="invalid-feedback">
-                                لطفاً رمز عبور را وارد کنید.
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="confirmPassword" class="form-label">تکرار رمز عبور</label>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required>
-                            <div class="invalid-feedback">
-                                رمزهای عبور مطابقت ندارند.
+                            <div class="form-check">
+                                {{ form.manage_permission }}
+                                <label class="form-check-label" for="{{ form.manage_permission.id_for_label }}">
+                                    <i class="fas fa-users-cog me-2"></i>مدیریت کاربران
+                                </label>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="form-section">
-                    <h5 class="mb-4"><i class="fas fa-user-shield me-2"></i>دسترسی‌ها و نقش‌ها</h5>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="userRole" class="form-label">نقش کاربری</label>
-                            <select class="form-select" id="userRole" name="role" required>
-                                <option value="" selected disabled>انتخاب کنید</option>
-                                <option value="admin">مدیر سیستم</option>
-                                <option value="editor">ویرایشگر</option>
-                                <option value="viewer">مشاهده‌کننده</option>
-                                <option value="guest">میهمان</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                لطفاً یک نقش انتخاب کنید.
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="userStatus" class="form-label">وضعیت حساب</label>
-                            <select class="form-select" id="userStatus" name="status" required>
-                                <option value="active" selected>فعال</option>
-                                <option value="inactive">غیرفعال</option>
-                                <option value="suspended">معلق</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">دسترسی‌های ویژه</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="canCreate" name="permissions[]" value="create">
-                            <label class="form-check-label" for="canCreate">ایجاد محتوا</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="canEdit" name="permissions[]" value="edit">
-                            <label class="form-check-label" for="canEdit">ویرایش محتوا</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="canDelete" name="permissions[]" value="delete">
-                            <label class="form-check-label" for="canDelete">حذف محتوا</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="canManageUsers" name="permissions[]" value="manage_users">
-                            <label class="form-check-label" for="canManageUsers">مدیریت کاربران</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="d-flex justify-content-between mt-4">
-                    <button type="reset" class="btn btn-outline-secondary">
-                        <i class="fas fa-undo me-2"></i>بازنشانی فرم
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>ذخیره کاربر
-                    </button>
-                </div>
-            </form>
-        </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                <button type="reset" class="btn btn-outline-secondary px-4">
+                    <i class="fas fa-undo me-2"></i>بازنشانی
+                </button>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="fas fa-save me-2"></i>ذخیره کاربر
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <script>
-    // Image Preview
-    function readURL(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                document.getElementById('imagePreview').setAttribute('src', e.target.result);
-            }
-            
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-    
-    document.getElementById('imageUpload').addEventListener('change', function() {
-        readURL(this);
-    });
-
-    // Form Validation
+    // Enable Bootstrap validation
     (function () {
         'use strict'
         
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
         const forms = document.querySelectorAll('.needs-validation')
         
+        // Loop over them and prevent submission
         Array.from(forms).forEach(form => {
             form.addEventListener('submit', event => {
                 if (!form.checkValidity()) {
@@ -327,21 +219,6 @@
                 form.classList.add('was-validated')
             }, false)
         })
-        
-        // Password confirmation
-        const password = document.getElementById('password');
-        const confirmPassword = document.getElementById('confirmPassword');
-        
-        function validatePassword() {
-            if (password.value !== confirmPassword.value) {
-                confirmPassword.setCustomValidity('رمزهای عبور مطابقت ندارند');
-            } else {
-                confirmPassword.setCustomValidity('');
-            }
-        }
-        
-        password.addEventListener('change', validatePassword);
-        confirmPassword.addEventListener('keyup', validatePassword);
     })()
 </script>
 {% endblock %}
