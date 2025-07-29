@@ -1,0 +1,15 @@
+# Ignore Python cache and bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore Git and local dev files
+.git
+.gitignore
+.env
+venv/
+*.log
+
+media/  # If you don't want local media copied; adjust as needed
+staticfiles/

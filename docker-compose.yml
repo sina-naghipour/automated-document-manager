@@ -1,0 +1,33 @@
+version: '3.9'  # Compatible with recent Docker versions
+
+services:
+  web:  # Your Django 'adm' app service
+    build: .  # Builds from the Dockerfile in the current directory
+    command: gunicorn --workers 3 --bind 0.0.0.0:8000 adm.wsgi:application  # Overrides Dockerfile CMD if needed
+    volumes:
+      - .:/app  # Mounts your code for development (remove in production for security)
+      - static_volume:/app/staticfiles  # Persists static files
+      - media_volume:/app/media  # Persists uploaded media
+    ports:
+      - "8000:8000"  # Maps container port to host
+    environment:
+      - DEBUG=True  # Set to False in production
+      - POSTGRES_DB=admdb
+      - POSTGRES_USER=admuser
+      - POSTGRES_PASSWORD=admpassword  # Change this to a strong password
+    depends_on:
+      - db  # Ensures DB starts first
+
+  db:  # PostgreSQL database service
+    image: postgres:15  # Stable version; matches psycopg2 compatibility
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persists DB data
+    environment:
+      - POSTGRES_DB=admdb
+      - POSTGRES_USER=admuser
+      - POSTGRES_PASSWORD=admpassword  # Same as above
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

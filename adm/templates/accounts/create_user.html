@@ -56,6 +56,40 @@
         font-size: 0.85rem;
         margin-top: 0.25rem;
     }
+    
+    .main-content {
+        margin-right: 200px;
+        padding: 25px;
+        width: calc(100% - 280px);
+        max-width: 100%;
+    }
+        @media (max-width: 992px) {
+        .sidebar {
+            width: 220px;
+        }
+
+        .main-content {
+            width: calc(100% - 220px);
+        }
+    }
+        .main-content {
+        margin-right: 200px;
+        padding: 25px;
+        width: calc(100% - 280px);
+        max-width: 100%;
+    }
+        @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            position: relative;
+            height: auto;
+        }
+
+        .main-content {
+            margin-right: 0;
+            width: 100%;
+        }
+    }
 </style>
 {% endblock %}
 
